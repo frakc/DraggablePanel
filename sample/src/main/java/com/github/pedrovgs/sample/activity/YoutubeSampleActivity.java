@@ -185,6 +185,7 @@ public class YoutubeSampleActivity extends FragmentActivity{
 
 	public void onConfigurationChanged(Configuration newConfig){
 		super.onConfigurationChanged(newConfig);
-
+		if(getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE)draggablePanel.setLockDragMode(true);
+		else draggablePanel.setLockDragMode(false);
 	}
 }
