@@ -144,7 +144,7 @@ public class YoutubeSampleActivity extends FragmentActivity{
 
 				@Override
 				public void onMinimized(){
-					//Empty
+
 				}
 
 
@@ -185,6 +185,5 @@ public class YoutubeSampleActivity extends FragmentActivity{
 
 	public void onConfigurationChanged(Configuration newConfig){
 		super.onConfigurationChanged(newConfig);
-
 	}
 }

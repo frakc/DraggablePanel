@@ -24,77 +24,84 @@ import android.view.View;
  *
  * @author Pedro Vicente Gómez Sánchez.
  */
-class DraggableViewCallback extends ViewDragHelper.Callback {
+class DraggableViewCallback extends ViewDragHelper.Callback{
 
-  private static final int MINIMUM_DX_FOR_HORIZONTAL_DRAG = 5;
-  private static final int MINIMUM_DY_FOR_VERTICAL_DRAG = 15;
-  private static final float X_MIN_VELOCITY = 1500;
-  private static final float Y_MIN_VELOCITY = 1000;
+	private static final int MINIMUM_DX_FOR_HORIZONTAL_DRAG = 5;
+	private static final int MINIMUM_DY_FOR_VERTICAL_DRAG = 15;
+	private static final float X_MIN_VELOCITY = 1500;
+	private static final float Y_MIN_VELOCITY = 1000;
 
-  private DraggableView draggableView;
-  private View draggedView;
+	private DraggableView draggableView;
+	private View draggedView;
 
-  /**
-   * Main constructor.
-   *
-   * @param draggableView instance used to apply some animations or visual effects.
-   */
-  public DraggableViewCallback(DraggableView draggableView, View draggedView) {
-    this.draggableView = draggableView;
-    this.draggedView = draggedView;
-  }
 
-  /**
-   * Override method used to apply different scale and alpha effects while the view is being
-   * dragged.
-   *
-   * @param left position.
-   * @param top position.
-   * @param dx change in X position from the last call.
-   * @param dy change in Y position from the last call.
-   */
-  @Override public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
-    if (draggableView.isDragViewAtBottom()) {
-      draggableView.changeDragViewViewAlpha();
-    } else {
-      draggableView.restoreAlpha();
-      draggableView.changeDragViewScale();
-      draggableView.changeDragViewPosition();
-      draggableView.changeSecondViewAlpha();
-      draggableView.changeSecondViewPosition();
-      draggableView.changeBackgroundAlpha();
-    }
-  }
+	/**
+	 * Main constructor.
+	 *
+	 * @param draggableView instance used to apply some animations or visual effects.
+	 */
+	public DraggableViewCallback(DraggableView draggableView, View draggedView){
+		this.draggableView = draggableView;
+		this.draggedView = draggedView;
+	}
 
-  /**
-   * Override method used to apply different animations when the dragged view is released. The
-   * dragged view is going to be maximized or minimized if the view is above the middle of the
-   * custom view and the velocity is greater than a constant value.
-   *
-   * @param releasedChild the captured child view now being released.
-   * @param xVel X velocity of the pointer as it left the screen in pixels per second.
-   * @param yVel Y velocity of the pointer as it left the screen in pixels per second.
-   */
-  @Override public void onViewReleased(View releasedChild, float xVel, float yVel) {
-    super.onViewReleased(releasedChild, xVel, yVel);
 
-    if (draggableView.isDragViewAtBottom() && !draggableView.isDragViewAtRight()) {
-      triggerOnReleaseActionsWhileHorizontalDrag(xVel);
-    } else {
-      triggerOnReleaseActionsWhileVerticalDrag(yVel);
-    }
-  }
+	/**
+	 * Override method used to apply different scale and alpha effects while the view is being
+	 * dragged.
+	 *
+	 * @param left position.
+	 * @param top  position.
+	 * @param dx   change in X position from the last call.
+	 * @param dy   change in Y position from the last call.
+	 */
+	@Override
+	public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy){
+		if(draggableView.isDragViewAtBottom()){
+			draggableView.changeDragViewViewAlpha();
+		} else{
+			draggableView.restoreAlpha();
+			draggableView.changeDragViewScale();
+			draggableView.changeDragViewPosition();
+			draggableView.changeSecondViewAlpha();
+			draggableView.changeSecondViewPosition();
+			draggableView.changeBackgroundAlpha();
+		}
+	}
 
-  /**
-   * Override method used to configure which is going to be the dragged view.
-   *
-   * @param view child the user is attempting to capture.
-   * @param pointerId ID of the pointer attempting the capture,
-   * @return true if capture should be allowed, false otherwise.
-   */
-  @Override public boolean tryCaptureView(View view, int pointerId) {
-    return view.equals(draggedView);
-  }
+
+	/**
+	 * Override method used to apply different animations when the dragged view is released. The
+	 * dragged view is going to be maximized or minimized if the view is above the middle of the
+	 * custom view and the velocity is greater than a constant value.
+	 *
+	 * @param releasedChild the captured child view now being released.
+	 * @param xVel          X velocity of the pointer as it left the screen in pixels per second.
+	 * @param yVel          Y velocity of the pointer as it left the screen in pixels per second.
+	 */
+	@Override
+	public void onViewReleased(View releasedChild, float xVel, float yVel){
+		super.onViewReleased(releasedChild, xVel, yVel);
+
+		if(draggableView.isDragViewAtBottom() && !draggableView.isDragViewAtRight()){
+			triggerOnReleaseActionsWhileHorizontalDrag(xVel);
+		} else{
+			triggerOnReleaseActionsWhileVerticalDrag(yVel);
+		}
+	}
+
+
+	/**
+	 * Override method used to configure which is going to be the dragged view.
+	 *
+	 * @param view      child the user is attempting to capture.
+	 * @param pointerId ID of the pointer attempting the capture,
+	 * @return true if capture should be allowed, false otherwise.
+	 */
+	@Override
+	public boolean tryCaptureView(View view, int pointerId){
+		return view.equals(draggedView);
+	}
 
   /**
    * Override method used to configure the horizontal drag. Restrict the motion of the dragged

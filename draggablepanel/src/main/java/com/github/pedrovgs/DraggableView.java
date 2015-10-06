@@ -280,6 +280,7 @@ public class DraggableView extends RelativeLayout{
 	 * Close the custom view applying an animation to close the view to the right side of the screen.
 	 */
 	public void closeToRight(){
+
 		DisplayMetrics dm = getResources().getDisplayMetrics();
 		int maxSize = Math.max(dm.widthPixels, dm.heightPixels);
 		if(viewDragHelper.smoothSlideViewTo(
@@ -298,21 +299,12 @@ public class DraggableView extends RelativeLayout{
 		DisplayMetrics dm = getResources().getDisplayMetrics();
 		int maxSize = Math.max(dm.widthPixels, dm.heightPixels);
 		if(viewDragHelper.smoothSlideViewTo(
-			dragView, -(transformer.getOriginalWidth() + maxSize), getHeight() - transformer.getMinHeightPlusMargin()
+			dragView, -maxSize * 20, getHeight() - transformer.getMinHeightPlusMargin()
 		)){
 			ViewCompat.postInvalidateOnAnimation(this);
 			notifyCloseToLeftListener();
 		}
 	}
-	//	public  void closeToLeft(boolean internal){
-	//		if(viewDragHelper.smoothSlideViewTo(
-	//			dragView, -transformer.getOriginalWidth(), getHeight() - transformer.getMinHeightPlusMargin()
-	//		)){
-	//			ViewCompat.postInvalidateOnAnimation(this);
-	//			if(notifyCloseToLeftListener();
-	//		}
-	//	}
-	//
 
 
 	/**
@@ -341,7 +333,7 @@ public class DraggableView extends RelativeLayout{
 	 * @return true if the view is closed at right.
 	 */
 	public boolean isClosedAtRight(){
-		return dragView.getLeft() >= getWidth();
+		return dragView.getLeft() >= transformer.getOriginalWidth();
 	}
 
 
@@ -472,11 +464,14 @@ public class DraggableView extends RelativeLayout{
 	}
 
 
+	private int oldOrientation = -1;
 	/**
 	 * Override method to configure the dragged view and secondView layout properly.
 	 */
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom){
+		DisplayMetrics dm = getResources().getDisplayMetrics();
+		if(oldOrientation == -1){ oldOrientation = getResources().getConfiguration().orientation; }
 		if(isInEditMode()){
 			super.onLayout(changed, left, top, right, bottom);
 		} else if(isDragViewAtTop()){
@@ -485,13 +480,38 @@ public class DraggableView extends RelativeLayout{
 			ViewHelper.setY(dragView, top);
 			ViewHelper.setY(secondView, transformer.getOriginalHeight());
 		} else{
-			//      secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+			dragView.setVisibility(INVISIBLE);
 			if(isClosedAtLeft()){
+				if(oldOrientation != getResources().getConfiguration().orientation){
+					dragView.layout(left, top, right, transformer.getOriginalHeight());
+
+					secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+					oldOrientation = getResources().getConfiguration().orientation;
+
+				}
+				closeToLeft();
 			} else if(isClosedAtRight()){
+				if(oldOrientation != getResources().getConfiguration().orientation){
+					dragView.layout(left, top, right, transformer.getOriginalHeight());
+					secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+					oldOrientation = getResources().getConfiguration().orientation;
+
+				}
+
+				closeToRight();
+
 			} else{
+				if(oldOrientation != getResources().getConfiguration().orientation){
+					dragView.layout(left, top, right, transformer.getOriginalHeight());
+					secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+					oldOrientation = getResources().getConfiguration().orientation;
+
+				}
 				smoothSlideTo(SLIDE_BOTTOM);
 			}
+			dragView.setVisibility(VISIBLE);
 		}
+		oldOrientation = getResources().getConfiguration().orientation;
 	}
 
 
@@ -787,9 +807,8 @@ public class DraggableView extends RelativeLayout{
 	 */
 	private boolean smoothSlideTo(float slideOffset){
 		final int topBound = getPaddingTop();
-		int x = (int) (slideOffset * (getWidth() - transformer.getMinWidthPlusMarginRight()));
 		int y = (int) (topBound + slideOffset * getVerticalDragRange());
-		if(viewDragHelper.smoothSlideViewTo(dragView, x, y)){
+		if(viewDragHelper.smoothSlideViewTo(dragView, 0, y)){
 			ViewCompat.postInvalidateOnAnimation(this);
 			return true;
 		}
