@@ -34,9 +34,7 @@ public class DIFragmentActivity extends SherlockFragmentActivity {
     ((DraggablePanelApplication) getApplication()).inject(this);
   }
 
-
-  public void onConfigurationChanged(Configuration newConfig){
+  public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
-
   }
 }

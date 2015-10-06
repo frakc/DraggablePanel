@@ -89,16 +89,13 @@ public class TvShowsActivity extends DIFragmentActivity {
    */
   private void initializeDraggableView() {
     Handler handler = new Handler();
-    handler.postDelayed(
-        new Runnable(){
+    handler.postDelayed(new Runnable() {
 
-          @Override
-          public void run(){
+          @Override public void run() {
             draggableView.setVisibility(View.GONE);
             draggableView.closeToRight();
           }
-        }, DELAY_MILLIS
-    );
+        }, DELAY_MILLIS);
   }
 
   /**
@@ -106,13 +103,10 @@ public class TvShowsActivity extends DIFragmentActivity {
    */
   private void initializeGridView() {
     tvShowsGridView.setAdapter(adapter);
-    tvShowsGridView.setOnItemClickListener(
-        new AdapterView.OnItemClickListener(){
+    tvShowsGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
           @Override
-          public void onItemClick(
-              AdapterView<?> adapterView, View view, int position, long id
-          ){
+          public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
             TvShowViewModel tvShow = adapter.getItem(position);
             tvShowSelected = tvShow;
             Picasso.with(getBaseContext())
@@ -124,8 +118,7 @@ public class TvShowsActivity extends DIFragmentActivity {
             draggableView.setVisibility(View.VISIBLE);
             draggableView.maximize();
           }
-        }
-    );
+        });
   }
 
   /**
@@ -133,33 +126,24 @@ public class TvShowsActivity extends DIFragmentActivity {
    * information.
    */
   private void hookListeners() {
-    draggableView.setDraggableListener(
-        new DraggableListener(){
+    draggableView.setDraggableListener(new DraggableListener() {
 
-          @Override
-          public void onMaximized(){
+          @Override public void onMaximized() {
             updateActionBarTitle();
           }
 
-
-          @Override
-          public void onMinimized(){
+          @Override public void onMinimized() {
             updateActionBarTitle();
           }
 
-
-          @Override
-          public void onClosedToLeft(){
+          @Override public void onClosedToLeft() {
             resetActionBarTitle();
           }
 
-
-          @Override
-          public void onClosedToRight(){
+          @Override public void onClosedToRight() {
             resetActionBarTitle();
           }
-        }
-    );
+        });
   }
 
   /**
@@ -205,29 +189,23 @@ public class TvShowsActivity extends DIFragmentActivity {
     header.setText(tvShow.getTitle().toUpperCase() + " - SEASON 1");
     episodesListView.setAdapter(null);
     episodesListView.addHeaderView(header);
-    episodesListView.setOnItemClickListener(
-        new AdapterView.OnItemClickListener(){
+    episodesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
           @Override
-          public void onItemClick(
-              AdapterView<?> adapterView, View view, int position, long id
-          ){
-            if(tvShowSelected != null){
-              if(position > 0){
+          public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            if (tvShowSelected != null) {
+              if (position > 0) {
                 EpisodeViewModel episodeViewModel = tvShowSelected.getEpisodes().get(position - 1);
-                Toast.makeText(
-                    getBaseContext(), tvShowSelected.getTitle() + " - " + episodeViewModel.getTitle(), Toast.LENGTH_LONG
-                ).show();
+                Toast.makeText(getBaseContext(),
+                    tvShowSelected.getTitle() + " - " + episodeViewModel.getTitle(),
+                    Toast.LENGTH_LONG).show();
               }
             }
           }
-        }
-    );
+        });
   }
 
-
-  public void onConfigurationChanged(Configuration newConfig){
+  public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
-
   }
 }

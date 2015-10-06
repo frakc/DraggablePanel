@@ -84,34 +84,25 @@ public class VideoSampleActivity extends FragmentActivity {
    * Hook DraggableListener to draggableView to pause or resume VideoView.
    */
   private void hookDraggableViewListener() {
-    draggableView.setDraggableListener(
-        new DraggableListener(){
+    draggableView.setDraggableListener(new DraggableListener() {
 
-          @Override
-          public void onMaximized(){
+          @Override public void onMaximized() {
             startVideo();
           }
 
-
           //Empty
-          @Override
-          public void onMinimized(){
+          @Override public void onMinimized() {
             //Empty
           }
 
-
-          @Override
-          public void onClosedToLeft(){
+          @Override public void onClosedToLeft() {
             pauseVideo();
           }
 
-
-          @Override
-          public void onClosedToRight(){
+          @Override public void onClosedToRight() {
             pauseVideo();
           }
-        }
-    );
+        });
   }
 
   /**
@@ -155,9 +146,7 @@ public class VideoSampleActivity extends FragmentActivity {
         .into(thumbnailImageView);
   }
 
-
-  public void onConfigurationChanged(Configuration newConfig){
+  public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
-
   }
 }

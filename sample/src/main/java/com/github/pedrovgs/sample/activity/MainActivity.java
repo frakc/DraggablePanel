@@ -54,9 +54,7 @@ public class MainActivity extends Activity {
     startActivity(intent);
   }
 
-
-  public void onConfigurationChanged(Configuration newConfig){
+  public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
-
   }
 }
