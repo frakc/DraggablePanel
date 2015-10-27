@@ -110,6 +110,15 @@ public class DraggablePanel extends FrameLayout {
     this.topFragmentHeight = topFragmentHeight;
   }
 
+  public void setFullScreen(boolean fullScreen) {
+    setLockDragMode(fullScreen);
+    if (fullScreen) {
+      draggableView.setTopViewHeight(getResources().getDisplayMetrics().heightPixels);
+    } else {
+      draggableView.setTopViewHeight(topFragmentHeight);
+    }
+  }
+
   /**
    * Return if user can maximize minimized view on click.
    */
