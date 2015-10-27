@@ -1,83 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.github.pedrovgs.sample"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    >
 
-    <uses-sdk android:minSdkVersion="8" />
+  <uses-sdk android:minSdkVersion="8"/>
 
-    <!-- Permissions -->
+  <!-- Permissions -->
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-    <uses-feature
-        android:glEsVersion="0x00020000"
-        android:required="true" />
+  <uses-feature
+      android:glEsVersion="0x00020000"
+      android:required="true"
+      />
 
-    <!-- Application configuration -->
+  <!-- Application configuration -->
 
-    <application
-        android:name=".DraggablePanelApplication"
-        android:icon="@drawable/ic_launcher"
+  <application
+      android:name=".DraggablePanelApplication"
+      android:icon="@drawable/ic_launcher"
+      android:label="@string/app_name"
+      android:theme="@style/AppTheme"
+      >
+
+    <!-- Maps API KEY -->
+
+    <meta-data
+        android:name="com.google.android.maps.v2.API_KEY"
+        android:value="AIzaSyC1rMU-mkhoyTvBIdTnYU0dss0tU9vtK48"
+        />
+
+    <!-- Main Activity -->
+
+    <activity
+        android:name=".activity.MainActivity"
+        android:configChanges="keyboardHidden|orientation|screenSize"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme">
+        >
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
 
-        <!-- Maps API KEY -->
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
 
-        <meta-data
-            android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyC1rMU-mkhoyTvBIdTnYU0dss0tU9vtK48" />
+    <!-- Places sample -->
 
-        <!-- Main Activity -->
+    <activity
+        android:name=".activity.PlacesSampleActivity"
+        android:configChanges="keyboardHidden|orientation|screenSize"
 
-        <activity
-            android:name=".activity.MainActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        android:label="@string/places_sample_activity_title"
+        />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+    <!-- TV Shows sample -->
 
-        <!-- Places sample -->
-
-        <activity
-            android:name=".activity.PlacesSampleActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-
-            android:label="@string/places_sample_activity_title" />
-
-        <!-- TV Shows sample -->
-
-        <activity
-            android:name=".activity.TvShowsActivity"
-            android:label="@string/tv_shows_sample_activity_title" />
+    <activity
+        android:name=".activity.TvShowsActivity"
+        android:label="@string/tv_shows_sample_activity_title"
+        />
 
 
-        <!-- Youtube Sample -->
+    <!-- Youtube Sample -->
 
-        <activity
-            android:name=".activity.YoutubeSampleActivity"
+    <activity
+        android:name=".activity.YoutubeSampleActivity"
+        android:label="@string/youtube_sample_activity_title"
+        />
 
-            android:label="@string/youtube_sample_activity_title" />
 
+    <!-- Video Sample -->
 
-        <!-- Video Sample -->
+    <activity
+        android:name=".activity.VideoSampleActivity"
+        android:configChanges="keyboardHidden|orientation|screenSize"
 
-        <activity
-            android:name=".activity.VideoSampleActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
+        android:label="@string/video_sample_activity_title"
+        />
 
-            android:label="@string/video_sample_activity_title" />
+    <meta-data
+        android:name="com.google.android.gms.version"
+        android:value="@integer/google_play_services_version"
+        />
 
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
-
-    </application>
+  </application>
 
 </manifest>

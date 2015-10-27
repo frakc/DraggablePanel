@@ -276,7 +276,8 @@ public class DraggableView extends RelativeLayout {
    * corner of the screen.
    */
   public void minimize() {
-    smoothSlideTo(SLIDE_BOTTOM);
+    //if (!isDragViewAtBottom())
+      smoothSlideTo(SLIDE_BOTTOM);
     notifyMinimizeToListener();
   }
 
@@ -284,7 +285,7 @@ public class DraggableView extends RelativeLayout {
    * Close the custom view applying an animation to close the view to the right side of the screen.
    */
   public void closeToRight() {
-    if (viewDragHelper.smoothSlideViewTo(dragView, transformer.getOriginalWidth(),
+    if (viewDragHelper.smoothSlideViewTo(dragView, getWidth(),
         getHeight() - transformer.getMinHeightPlusMargin())) {
       ViewCompat.postInvalidateOnAnimation(this);
       notifyCloseToRightListener();
@@ -295,7 +296,7 @@ public class DraggableView extends RelativeLayout {
    * Close the custom view applying an animation to close the view to the left side of the screen.
    */
   public void closeToLeft() {
-    if (viewDragHelper.smoothSlideViewTo(dragView, -transformer.getOriginalWidth(),
+    if (viewDragHelper.smoothSlideViewTo(dragView, -getWidth(),
         getHeight() - transformer.getMinHeightPlusMargin())) {
       ViewCompat.postInvalidateOnAnimation(this);
       notifyCloseToLeftListener();
@@ -452,6 +453,9 @@ public class DraggableView extends RelativeLayout {
   @Override protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     Log.e("drview",
         "onLayout " + changed + " | " + left + " | " + top + " | " + right + " | " + bottom);
+    Log.e("drview",
+        "view size " + dragView.getWidth() + " | " + dragView.getHeight() + " + screen width "
+            + getWidth());
     if (isInEditMode()) {
       super.onLayout(changed, left, top, right, bottom);
     } else {
@@ -476,14 +480,11 @@ public class DraggableView extends RelativeLayout {
               int newAlpha = ONE_HUNDRED;
               background.setAlpha(newAlpha);
             }
-            //ViewHelper.setX(dragView, 0);
-            //ViewHelper.setY(dragView, 0);
             dragView.offsetLeftAndRight(0);
             dragView.offsetTopAndBottom(0);
             ViewHelper.setY(secondView, dragView.getBottom());
             mState = DraggableViewState.MAXIMISED;
 
-            //smoothSlideTo(SLIDE_TOP);
             break;
           case MINIMISED:
             transformer.updatePosition(0.99864f);
@@ -495,21 +496,16 @@ public class DraggableView extends RelativeLayout {
             }
             x = (getWidth() - transformer.getMinWidthPlusMarginRight());
             y = (int) getVerticalDragRange();
-            //ViewHelper.setX(dragView, x);
-            //ViewHelper.setY(dragView, y);
-            dragView.offsetLeftAndRight(x);
+            dragView.offsetLeftAndRight(0);
             dragView.offsetTopAndBottom(y);
             ViewHelper.setY(secondView, dragView.getBottom());
             mState = DraggableViewState.MINIMISED;
-            //smoothSlideTo(SLIDE_BOTTOM);
             break;
           case CLOSED_TO_LEFT:
-            x = -transformer.getOriginalWidth();
+            x = -getWidth();
             y = getHeight() - transformer.getMinHeightPlusMargin();
             dragView.offsetLeftAndRight(x);
             dragView.offsetTopAndBottom(y);
-            //ViewHelper.setX(dragView, -transformer.getOriginalWidth());
-            //ViewHelper.setY(dragView, getHeight() - transformer.getMinHeightPlusMargin());
             transformer.updatePosition(0.99864f);
             transformer.updateScale(0.99864f);
             ViewHelper.setAlpha(secondView, 0f);
@@ -520,15 +516,12 @@ public class DraggableView extends RelativeLayout {
             ViewHelper.setY(secondView, dragView.getBottom());
             mState = DraggableViewState.CLOSED_TO_LEFT;
 
-            //closeToLeft();
             break;
           case CLOSED_TO_RIGHT:
-            x = transformer.getOriginalWidth();
+            x = getWidth();
             y = getHeight() - transformer.getMinHeightPlusMargin();
             dragView.offsetLeftAndRight(x);
             dragView.offsetTopAndBottom(y);
-            //ViewHelper.setX(dragView, transformer.getOriginalWidth());
-            //ViewHelper.setY(dragView, getHeight() - transformer.getMinHeightPlusMargin());
             transformer.updatePosition(0.99864f);
             transformer.updateScale(0.99864f);
             ViewHelper.setAlpha(secondView, 0f);
@@ -539,7 +532,6 @@ public class DraggableView extends RelativeLayout {
             mState = DraggableViewState.CLOSED_TO_RIGHT;
 
             ViewHelper.setY(secondView, dragView.getBottom());
-            //closeToRight();
             break;
           default:
             transformer.updatePosition(0.99864f);
@@ -551,29 +543,14 @@ public class DraggableView extends RelativeLayout {
             }
             x = (int) ((getWidth() - transformer.getMinWidthPlusMarginRight()));
             y = (int) (topBound + 1 * getVerticalDragRange());
-            //ViewHelper.setX(dragView, x);
-            //ViewHelper.setY(dragView, y);
-            dragView.offsetLeftAndRight(x);
+            dragView.offsetLeftAndRight(0);
             dragView.offsetTopAndBottom(y);
             ViewHelper.setY(secondView, dragView.getBottom());
             mState = DraggableViewState.MINIMISED;
-            //smoothSlideTo(SLIDE_BOTTOM);
             break;
         }
       }
     }
-    //else {
-    //  if (isDragViewAtTop()) {
-    //    dragView.layout(left, top, right, transformer.getOriginalHeight());
-    //    secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
-    //    ViewHelper.setY(dragView, top);
-    //    ViewHelper.setX(dragView, left);
-    //    ViewHelper.setY(secondView, transformer.getOriginalHeight());
-    //    ViewHelper.setX(secondView, left);
-    //  } else {
-    //    secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
-    //  }
-    //}
   }
 
   /**
@@ -834,8 +811,10 @@ public class DraggableView extends RelativeLayout {
   private boolean smoothSlideTo(float slideOffset) {
     final int topBound = getPaddingTop();
     int x = (int) (slideOffset * (getWidth() - transformer.getMinWidthPlusMarginRight()));
+    Log.e("drview",
+        "minimise " + x + " + " + transformer.getMinWidthPlusMarginRight() + " = " + getWidth());
     int y = (int) (topBound + slideOffset * getVerticalDragRange());
-    if (viewDragHelper.smoothSlideViewTo(dragView, x, y)) {
+    if (viewDragHelper.smoothSlideViewTo(dragView, 0, y)) {
       ViewCompat.postInvalidateOnAnimation(this);
       return true;
     }
