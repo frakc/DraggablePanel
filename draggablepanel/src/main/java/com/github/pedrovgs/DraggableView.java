@@ -18,12 +18,15 @@ package com.github.pedrovgs;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -38,6 +41,11 @@ import com.nineoldandroids.view.ViewHelper;
  */
 public class DraggableView extends RelativeLayout {
 
+  private enum DraggableViewState {
+    MAXIMISED, MINIMISED, CLOSED_TO_LEFT, CLOSED_TO_RIGHT
+  }
+
+  private DraggableViewState mState = DraggableViewState.MAXIMISED;
   private static final int DEFAULT_SCALE_FACTOR = 2;
   private static final int DEFAULT_TOP_VIEW_MARGIN = 30;
   private static final int DEFAULT_TOP_VIEW_HEIGHT = -1;
@@ -70,8 +78,13 @@ public class DraggableView extends RelativeLayout {
   private boolean enableClickToMaximize;
   private boolean enableClickToMinimize;
   private boolean touchEnabled;
-  private boolean lockDragMode =false;
+  private boolean lockDragMode = false;
   private DraggableListener listener;
+
+  private int left = 0;
+  private int top = 0;
+  private int right = 0;
+  private int bottom = 0;
 
   public DraggableView(Context context) {
     super(context);
@@ -130,24 +143,22 @@ public class DraggableView extends RelativeLayout {
     return this.touchEnabled;
   }
 
-
   /**
    * Disables dragging the view
-   * @param lock - true to disable, false to enable
    *
+   * @param lock - true to disable, false to enable
    */
-  public  void setLockDragMode(boolean lock){
-      this.lockDragMode =lock;
+  public void setLockDragMode(boolean lock) {
+    this.lockDragMode = lock;
   }
-
 
   /**
-   *
    * Return if dragging is locked or unlocked
    */
-  public  boolean isLockDragMode(){
+  public boolean isLockDragMode() {
     return lockDragMode;
   }
+
   /**
    * Enable or disable the touch listener
    *
@@ -380,7 +391,7 @@ public class DraggableView extends RelativeLayout {
     if (activePointerId == INVALID_POINTER) {
       return false;
     }
-    if(!lockDragMode) viewDragHelper.processTouchEvent(ev);
+    if (!lockDragMode) viewDragHelper.processTouchEvent(ev);
     if (isClosed()) {
       return false;
     }
@@ -396,7 +407,7 @@ public class DraggableView extends RelativeLayout {
   }
 
   private void analyzeTouchToMaximizeIfNeeded(MotionEvent ev, boolean isDragViewHit) {
-    switch(ev.getAction()) {
+    switch (ev.getAction()) {
       case MotionEvent.ACTION_DOWN:
         lastTouchActionDownXPosition = ev.getX();
         break;
@@ -417,8 +428,7 @@ public class DraggableView extends RelativeLayout {
 
   public boolean shouldMaximizeOnClick(MotionEvent ev, float deltaX, boolean isDragViewHit) {
     return (Math.abs(deltaX) < MIN_SLIDING_DISTANCE_ON_CLICK)
-        && ev.getAction() != MotionEvent.ACTION_MOVE
-        && isDragViewHit;
+        && ev.getAction() != MotionEvent.ACTION_MOVE && isDragViewHit;
   }
 
   /**
@@ -440,16 +450,130 @@ public class DraggableView extends RelativeLayout {
    * Override method to configure the dragged view and secondView layout properly.
    */
   @Override protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-    if (isInEditMode())
+    Log.e("drview",
+        "onLayout " + changed + " | " + left + " | " + top + " | " + right + " | " + bottom);
+    if (isInEditMode()) {
       super.onLayout(changed, left, top, right, bottom);
-    else if (isDragViewAtTop()) {
-      dragView.layout(left, top, right, transformer.getOriginalHeight());
-      secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
-      ViewHelper.setY(dragView, top);
-      ViewHelper.setY(secondView, transformer.getOriginalHeight());
     } else {
-      secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+
+      if (true) {
+        dragView.layout(left, top, right, transformer.getOriginalHeight());
+        secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+        ViewHelper.setY(dragView, top);
+        ViewHelper.setX(dragView, left);
+        ViewHelper.setY(secondView, transformer.getOriginalHeight());
+        ViewHelper.setX(secondView, left);
+        final int topBound = getPaddingTop();
+        int x;
+        int y;
+        Drawable background = getBackground();
+        switch (mState) {
+          case MAXIMISED:
+            transformer.updateScale(0f);
+            transformer.updatePosition(0f);
+            ViewHelper.setAlpha(secondView, 0.99864f);
+            if (background != null) {
+              int newAlpha = ONE_HUNDRED;
+              background.setAlpha(newAlpha);
+            }
+            //ViewHelper.setX(dragView, 0);
+            //ViewHelper.setY(dragView, 0);
+            dragView.offsetLeftAndRight(0);
+            dragView.offsetTopAndBottom(0);
+            ViewHelper.setY(secondView, dragView.getBottom());
+            mState = DraggableViewState.MAXIMISED;
+
+            //smoothSlideTo(SLIDE_TOP);
+            break;
+          case MINIMISED:
+            transformer.updatePosition(0.99864f);
+            transformer.updateScale(0.99864f);
+            ViewHelper.setAlpha(secondView, 0f);
+            if (background != null) {
+              int newAlpha = 0;
+              background.setAlpha(newAlpha);
+            }
+            x = (getWidth() - transformer.getMinWidthPlusMarginRight());
+            y = (int) getVerticalDragRange();
+            //ViewHelper.setX(dragView, x);
+            //ViewHelper.setY(dragView, y);
+            dragView.offsetLeftAndRight(x);
+            dragView.offsetTopAndBottom(y);
+            ViewHelper.setY(secondView, dragView.getBottom());
+            mState = DraggableViewState.MINIMISED;
+            //smoothSlideTo(SLIDE_BOTTOM);
+            break;
+          case CLOSED_TO_LEFT:
+            x = -transformer.getOriginalWidth();
+            y = getHeight() - transformer.getMinHeightPlusMargin();
+            dragView.offsetLeftAndRight(x);
+            dragView.offsetTopAndBottom(y);
+            //ViewHelper.setX(dragView, -transformer.getOriginalWidth());
+            //ViewHelper.setY(dragView, getHeight() - transformer.getMinHeightPlusMargin());
+            transformer.updatePosition(0.99864f);
+            transformer.updateScale(0.99864f);
+            ViewHelper.setAlpha(secondView, 0f);
+            if (background != null) {
+              int newAlpha = 0;
+              background.setAlpha(newAlpha);
+            }
+            ViewHelper.setY(secondView, dragView.getBottom());
+            mState = DraggableViewState.CLOSED_TO_LEFT;
+
+            //closeToLeft();
+            break;
+          case CLOSED_TO_RIGHT:
+            x = transformer.getOriginalWidth();
+            y = getHeight() - transformer.getMinHeightPlusMargin();
+            dragView.offsetLeftAndRight(x);
+            dragView.offsetTopAndBottom(y);
+            //ViewHelper.setX(dragView, transformer.getOriginalWidth());
+            //ViewHelper.setY(dragView, getHeight() - transformer.getMinHeightPlusMargin());
+            transformer.updatePosition(0.99864f);
+            transformer.updateScale(0.99864f);
+            ViewHelper.setAlpha(secondView, 0f);
+            if (background != null) {
+              int newAlpha = 0;
+              background.setAlpha(newAlpha);
+            }
+            mState = DraggableViewState.CLOSED_TO_RIGHT;
+
+            ViewHelper.setY(secondView, dragView.getBottom());
+            //closeToRight();
+            break;
+          default:
+            transformer.updatePosition(0.99864f);
+            transformer.updateScale(0.99864f);
+            ViewHelper.setAlpha(secondView, 0f);
+            if (background != null) {
+              int newAlpha = 0;
+              background.setAlpha(newAlpha);
+            }
+            x = (int) ((getWidth() - transformer.getMinWidthPlusMarginRight()));
+            y = (int) (topBound + 1 * getVerticalDragRange());
+            //ViewHelper.setX(dragView, x);
+            //ViewHelper.setY(dragView, y);
+            dragView.offsetLeftAndRight(x);
+            dragView.offsetTopAndBottom(y);
+            ViewHelper.setY(secondView, dragView.getBottom());
+            mState = DraggableViewState.MINIMISED;
+            //smoothSlideTo(SLIDE_BOTTOM);
+            break;
+        }
+      }
     }
+    //else {
+    //  if (isDragViewAtTop()) {
+    //    dragView.layout(left, top, right, transformer.getOriginalHeight());
+    //    secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+    //    ViewHelper.setY(dragView, top);
+    //    ViewHelper.setX(dragView, left);
+    //    ViewHelper.setY(secondView, transformer.getOriginalHeight());
+    //    ViewHelper.setX(secondView, left);
+    //  } else {
+    //    secondView.layout(left, transformer.getOriginalHeight(), right, bottom);
+    //  }
+    //}
   }
 
   /**
@@ -634,10 +758,8 @@ public class DraggableView extends RelativeLayout {
     this.getLocationOnScreen(parentLocation);
     int screenX = parentLocation[0] + x;
     int screenY = parentLocation[1] + y;
-    return screenX >= viewLocation[0]
-        && screenX < viewLocation[0] + view.getWidth()
-        && screenY >= viewLocation[1]
-        && screenY < viewLocation[1] + view.getHeight();
+    return screenX >= viewLocation[0] && screenX < viewLocation[0] + view.getWidth()
+        && screenY >= viewLocation[1] && screenY < viewLocation[1] + view.getHeight();
   }
 
   /**
@@ -654,7 +776,8 @@ public class DraggableView extends RelativeLayout {
    * Initialize the viewDragHelper.
    */
   private void initializeViewDragHelper() {
-    viewDragHelper = ViewDragHelper.create(this, SENSITIVITY, new DraggableViewCallback(this, dragView));
+    viewDragHelper =
+        ViewDragHelper.create(this, SENSITIVITY, new DraggableViewCallback(this, dragView));
   }
 
   /**
@@ -665,8 +788,9 @@ public class DraggableView extends RelativeLayout {
         attributes.getBoolean(R.styleable.draggable_view_top_view_resize, DEFAULT_TOP_VIEW_RESIZE);
     TransformerFactory transformerFactory = new TransformerFactory();
     transformer = transformerFactory.getTransformer(topViewResize, dragView, this);
-    transformer.setViewHeight(attributes.getDimensionPixelSize(R.styleable.draggable_view_top_view_height,
-        DEFAULT_TOP_VIEW_HEIGHT));
+    transformer.setViewHeight(
+        attributes.getDimensionPixelSize(R.styleable.draggable_view_top_view_height,
+            DEFAULT_TOP_VIEW_HEIGHT));
     transformer.setXScaleFactor(
         attributes.getFloat(R.styleable.draggable_view_top_view_x_scale_factor,
             DEFAULT_SCALE_FACTOR));
@@ -763,6 +887,7 @@ public class DraggableView extends RelativeLayout {
    * Notify te view is maximized to the DraggableListener
    */
   private void notifyMaximizeToListener() {
+    mState = DraggableViewState.MAXIMISED;
     if (listener != null) {
       listener.onMaximized();
     }
@@ -772,6 +897,7 @@ public class DraggableView extends RelativeLayout {
    * Notify te view is minimized to the DraggableListener
    */
   private void notifyMinimizeToListener() {
+    mState = DraggableViewState.MINIMISED;
     if (listener != null) {
       listener.onMinimized();
     }
@@ -781,6 +907,7 @@ public class DraggableView extends RelativeLayout {
    * Notify te view is closed to the right to the DraggableListener
    */
   private void notifyCloseToRightListener() {
+    mState = DraggableViewState.CLOSED_TO_LEFT;
     if (listener != null) {
       listener.onClosedToRight();
     }
@@ -790,6 +917,7 @@ public class DraggableView extends RelativeLayout {
    * Notify te view is closed to the left to the DraggableListener
    */
   private void notifyCloseToLeftListener() {
+    mState = DraggableViewState.CLOSED_TO_RIGHT;
     if (listener != null) {
       listener.onClosedToLeft();
     }
@@ -797,5 +925,78 @@ public class DraggableView extends RelativeLayout {
 
   public int getDraggedViewHeightPlusMarginTop() {
     return transformer.getMinHeightPlusMargin();
+  }
+
+  @Override protected Parcelable onSaveInstanceState() {
+    Parcelable superState = super.onSaveInstanceState();
+    SavedState ss = new SavedState(superState);
+    ss.drState = mState;
+    return ss;
+  }
+
+  @Override protected void onRestoreInstanceState(Parcelable state) {
+    if (!(state instanceof SavedState)) {
+      super.onRestoreInstanceState(state);
+      return;
+    }
+    SavedState ss = (SavedState) state;
+    super.onRestoreInstanceState(ss.getSuperState());
+    mState = ss.drState;
+    switch (mState) {
+      case MAXIMISED:
+        smoothSlideTo(SLIDE_TOP);
+        break;
+      case MINIMISED:
+        smoothSlideTo(SLIDE_BOTTOM);
+        break;
+      case CLOSED_TO_LEFT:
+        closeToLeft();
+        break;
+      case CLOSED_TO_RIGHT:
+        closeToRight();
+        break;
+      default:
+        smoothSlideTo(SLIDE_BOTTOM);
+        break;
+    }
+    Log.e("drview", "onRestoreState " + mState.toString());
+  }
+
+  /**
+   * User interface state that is stored by TextView for implementing
+   * {@link View#onSaveInstanceState}.
+   */
+  public static class SavedState extends BaseSavedState {
+    DraggableViewState drState;
+
+    SavedState(Parcelable superState) {
+      super(superState);
+    }
+
+    @Override public void writeToParcel(Parcel out, int flags) {
+      super.writeToParcel(out, flags);
+      out.writeSerializable(drState);
+    }
+
+    @Override public String toString() {
+      String str = "DraggableView state: " + drState;
+      return str;
+    }
+
+    @SuppressWarnings("hiding") public static final Parcelable.Creator<SavedState> CREATOR =
+        new Parcelable.Creator<SavedState>() {
+          public SavedState createFromParcel(Parcel in) {
+            return new SavedState(in);
+          }
+
+          public SavedState[] newArray(int size) {
+            return new SavedState[size];
+          }
+        };
+
+    private SavedState(Parcel in) {
+      super(in);
+      drState = (DraggableViewState) in.readSerializable();
+    }
   }
 }

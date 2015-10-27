@@ -62,7 +62,6 @@
 
         <activity
             android:name=".activity.YoutubeSampleActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
 
             android:label="@string/youtube_sample_activity_title" />
 
